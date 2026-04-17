@@ -1,12 +1,10 @@
 import type { ZoteroItem, IZotero, ZoteroObserver } from '../typings/zotero'
 import { ItemPane } from './itemPane'
 import { ToolsPane } from './toolsPane'
-import { PrefPane } from './prefPane'
 import { UrlUtil } from './urlUtil'
 import { ZoteroUtil } from './zoteroUtil'
 
 declare const Zotero: IZotero
-declare const window
 
 enum HttpCodes {
   DONE = 200,
@@ -39,12 +37,11 @@ class Scihub {
   private observerId: number | null = null
   private initialized = false
   public ItemPane: ItemPane
-  public PrefPane: PrefPane
   public ToolsPane: ToolsPane
+  public rootURI: string | null = null
 
   constructor() {
     this.ItemPane = new ItemPane()
-    this.PrefPane = new PrefPane()
     this.ToolsPane = new ToolsPane()
   }
 
@@ -101,12 +98,12 @@ class Scihub {
           ZoteroUtil.showPopup('PDF not available', `Try again later.\n"${item.getField('title')}"`, true)
           continue
         } else {
-          // Break if Captcha is reached, alert user and redirect
-          alert(
-            `Captcha is required or PDF is not ready yet for "${item.getField('title')}".\n\
-            You will be redirected to the scihub page.\n\
-            Restart fetching process manually.\n\
-            Error message: ${error}`)
+          // Break if Captcha is reached, notify user and redirect
+          ZoteroUtil.showPopup(
+            'Captcha Required',
+            `Captcha is required or PDF is not ready yet for "${item.getField('title')}".\nYou will be redirected to the Sci-Hub page.\nRestart fetching process manually.\nError: ${error}`,
+            true
+          )
           Zotero.launchURL(scihubUrl.href)
           break
         }
@@ -195,15 +192,5 @@ class Scihub {
 }
 
 Zotero.Scihub = new Scihub()
-
-// Check fails in testing environment
-if (typeof window !== 'undefined') {
-  window.addEventListener('load', _ => {
-    Zotero.Scihub.load()
-  }, false)
-  window.addEventListener('unload', _ => {
-    Zotero.Scihub.unload()
-  }, false)
-}
 
 export { Scihub }

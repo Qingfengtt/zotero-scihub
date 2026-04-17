@@ -34,6 +34,8 @@ interface IZotero {
   debug: (msg: string) => void
   logError: (err: Error | string) => void
   launchURL: (url: string) => void
+  getActiveZoteroPane: () => IZoteroPane
+  getMainWindows: () => any[]
 
   Notifier: {
     registerObserver: (observer: ZoteroObserver, types: string[], id: string, priority?: number) => number // any => ZoteroObserver
@@ -41,7 +43,7 @@ interface IZotero {
   }
 
   Prefs: {
-    get: (pref: string) => string | number | boolean
+    get: (pref: string, global?: boolean) => string | number | boolean
     set: (pref: string, value: string | number | boolean) => any
   }
 
@@ -68,6 +70,16 @@ interface IZotero {
 
   ProgressWindow: {
     new(): ProgressWindow
+  }
+
+  PreferencePanes: {
+    register: (options: {
+      pluginID: string,
+      src: string,
+      scripts?: string[],
+      label?: string,
+      image?: string,
+    }) => void
   }
 }
 

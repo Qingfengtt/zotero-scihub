@@ -10,6 +10,15 @@ const Zotero: IZotero = new class {
   public debug(_msg: string) { return }
   public logError(_err: Error | string) { return }
   public launchURL(_url: string) { return }
+  public getActiveZoteroPane() {
+    return {
+      canEdit: () => true,
+      displayCannotEditLibraryMessage: () => undefined,
+      getSelectedCollection: () => null,
+      getSelectedItems: () => [regularItem1] as [ZoteroItem],
+    }
+  }
+  public getMainWindows() { return [] }
 
   public Notifier: IZotero['Notifier'] = new class {
     public registerObserver(_observer: ZoteroObserver, _types: string[], _id: string, _priority?: number) {
@@ -78,6 +87,10 @@ const Zotero: IZotero = new class {
     public addDescription(_body: string) { return }
     public startCloseTimer(_millis: number) { return }
     public show() { return }
+  }
+
+  public PreferencePanes = new class {
+    public register(_options: any) { return }
   }
 }
 

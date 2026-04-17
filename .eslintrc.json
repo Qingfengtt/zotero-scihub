@@ -292,6 +292,9 @@
   },
   "ignorePatterns": [
     "esbuild.js",
+    "bootstrap.js",
+    "prefs.js",
+    "content/preferences.js",
     "util/*.ts",
     "minitests/*.ts",
     "content/minitests/*.ts"
