@@ -1,10 +1,10 @@
-import type { IZotero, IZoteroPane } from '../typings/zotero'
-declare const ZoteroPane: IZoteroPane
+import type { IZotero } from '../typings/zotero'
 declare const Zotero: IZotero
 
 class ItemPane {
-  public async updateSelectedEntity(libraryId: string): Promise<void> {
-    Zotero.debug(`scihub: updating items in entity ${libraryId}`)
+  public async updateSelectedEntity(_libraryId?: string): Promise<void> {
+    const ZoteroPane = Zotero.getActiveZoteroPane()
+    Zotero.debug('scihub: updating items in selected collection')
     if (!ZoteroPane.canEdit()) {
       ZoteroPane.displayCannotEditLibraryMessage()
       return
@@ -18,6 +18,7 @@ class ItemPane {
   }
 
   public async updateSelectedItems(): Promise<void> {
+    const ZoteroPane = Zotero.getActiveZoteroPane()
     Zotero.debug('scihub: updating selected items')
     const items = ZoteroPane.getSelectedItems()
     await Zotero.Scihub.updateItems(items)
