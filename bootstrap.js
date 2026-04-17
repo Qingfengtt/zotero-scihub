@@ -32,7 +32,6 @@ async function startup({ id, version, rootURI }) {
 
   // Initialize the plugin
   Zotero.Scihub.load();
-  Zotero.Scihub.rootURI = rootURI;
 
   // Add menu items to all already-open windows
   addToAllWindows();

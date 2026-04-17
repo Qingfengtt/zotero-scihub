@@ -38,7 +38,6 @@ class Scihub {
   private initialized = false
   public ItemPane: ItemPane
   public ToolsPane: ToolsPane
-  public rootURI: string | null = null
 
   constructor() {
     this.ItemPane = new ItemPane()
