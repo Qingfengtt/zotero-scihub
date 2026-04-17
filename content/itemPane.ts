@@ -2,7 +2,7 @@ import type { IZotero } from '../typings/zotero'
 declare const Zotero: IZotero
 
 class ItemPane {
-  public async updateSelectedEntity(_libraryId?: string): Promise<void> {
+  public async updateSelectedEntity(): Promise<void> {
     const ZoteroPane = Zotero.getActiveZoteroPane()
     Zotero.debug('scihub: updating items in selected collection')
     if (!ZoteroPane.canEdit()) {

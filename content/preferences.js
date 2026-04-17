@@ -2,6 +2,7 @@
 /* global Zotero, document */
 
 // Initialize preferences UI from stored values
+// Note: defaults here must match those in prefs.js to handle first-run initialization
 function initScihubPreferences() {
   var DEFAULT_SCIHUB_URL = "https://sci-hub.ru/";
   var DEFAULT_AUTOMATIC_PDF_DOWNLOAD = true;
