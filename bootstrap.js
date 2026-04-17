@@ -2,10 +2,8 @@
 /* global Zotero, Services */
 
 var PLUGIN_ID = "zotero-scihub@ethanwillis.github.io";
-var ZoteroScihub;
-var registeredMenuIDs = [];
+var pluginRootURI = null;
 var addedElementIDs = [];
-var useMenuManager = false;
 
 function log(msg) {
   Zotero.debug("Sci-Hub Plugin: " + msg);
@@ -18,153 +16,70 @@ function install() {
 async function startup({ id, version, rootURI }) {
   log("Starting");
 
-  try {
-    // Register preferences pane
-    Zotero.PreferencePanes.register({
-      pluginID: PLUGIN_ID,
-      src: rootURI + "content/preferences.xhtml",
-      scripts: [rootURI + "content/preferences.js"],
-      label: "Zotero Scihub",
-      image: rootURI + "skin/default/sci-hub-logo.svg",
-    });
+  pluginRootURI = rootURI;
 
-    // Load main plugin script
-    Services.scriptloader.loadSubScript(rootURI + "content/scihub.js");
-
-    // Initialize the plugin
-    Zotero.Scihub.load();
-    ZoteroScihub = Zotero.Scihub;
-    ZoteroScihub.rootURI = rootURI;
-
-    // Use Zotero.MenuManager API if available (Zotero 7.1+)
-    if (Zotero.MenuManager && typeof Zotero.MenuManager.registerMenu === "function") {
-      useMenuManager = true;
-      registerMenus(rootURI);
-      log("Menus registered via MenuManager API");
-    } else {
-      log("MenuManager not available, will use DOM manipulation in onMainWindowLoad");
-    }
-  } catch (e) {
-    log("Error during startup: " + e);
-    Zotero.logError(e);
-  }
-}
-
-function registerMenus(rootURI) {
-  var icon = rootURI + "skin/default/sci-hub-logo.svg";
-
-  // Item context menu
-  var itemMenuID = Zotero.MenuManager.registerMenu({
+  // Register preferences pane
+  Zotero.PreferencePanes.register({
     pluginID: PLUGIN_ID,
-    target: "main/library/item",
-    menus: [
-      {
-        menuType: "menuitem",
-        label: "Update Scihub PDF",
-        icon: icon,
-        onCommand: function () {
-          Zotero.Scihub.ItemPane.updateSelectedItems();
-        },
-      },
-    ],
+    src: rootURI + "content/preferences.xhtml",
+    scripts: [rootURI + "content/preferences.js"],
+    label: "Zotero Scihub",
+    image: rootURI + "skin/default/sci-hub-logo.svg",
   });
-  if (itemMenuID) {
-    registeredMenuIDs.push(itemMenuID);
-  } else {
-    log("Warning: Failed to register item context menu");
-  }
 
-  // Collection context menu
-  var collMenuID = Zotero.MenuManager.registerMenu({
-    pluginID: PLUGIN_ID,
-    target: "main/library/collection",
-    menus: [
-      {
-        menuType: "menuitem",
-        label: "Update Collection Scihub PDFs",
-        icon: icon,
-        onCommand: function () {
-          Zotero.Scihub.ItemPane.updateSelectedEntity();
-        },
-      },
-    ],
-  });
-  if (collMenuID) {
-    registeredMenuIDs.push(collMenuID);
-  } else {
-    log("Warning: Failed to register collection context menu");
-  }
+  // Load main plugin script
+  Services.scriptloader.loadSubScript(rootURI + "content/scihub.js");
 
-  // Tools menu
-  var toolsMenuID = Zotero.MenuManager.registerMenu({
-    pluginID: PLUGIN_ID,
-    target: "main/menubar/tools",
-    menus: [
-      {
-        menuType: "menuitem",
-        label: "Update All Scihub PDFs",
-        icon: icon,
-        onCommand: function () {
-          Zotero.Scihub.ToolsPane.updateAll();
-        },
-      },
-    ],
-  });
-  if (toolsMenuID) {
-    registeredMenuIDs.push(toolsMenuID);
-  } else {
-    log("Warning: Failed to register tools menu");
-  }
+  // Initialize the plugin
+  Zotero.Scihub.load();
+
+  // Add menu items to all already-open windows
+  addToAllWindows();
 }
 
 function onMainWindowLoad({ window }) {
-  // Only use DOM manipulation if MenuManager is not available
-  if (!useMenuManager) {
-    try {
-      addMenuItems(window);
-      log("Menus added via DOM manipulation");
-    } catch (e) {
-      log("Error adding menu items: " + e);
-      Zotero.logError(e);
-    }
-  }
+  addMenuItems(window);
 }
 
 function onMainWindowUnload({ window }) {
-  if (!useMenuManager) {
-    removeMenuItems(window);
-  }
+  removeMenuItems(window);
 }
 
 function shutdown() {
   log("Shutting down");
 
-  // Unregister menus registered via MenuManager
-  if (useMenuManager && Zotero.MenuManager) {
-    for (var menuID of registeredMenuIDs) {
-      try {
-        Zotero.MenuManager.unregisterMenu(menuID);
-      } catch (e) {
-        log("Error unregistering menu: " + e);
-      }
-    }
-    registeredMenuIDs = [];
-  }
+  removeFromAllWindows();
 
   if (Zotero.Scihub) {
     Zotero.Scihub.unload();
   }
-  ZoteroScihub = undefined;
-  useMenuManager = false;
+
+  pluginRootURI = null;
 }
 
 function uninstall() {
   log("Uninstalled");
 }
 
-// Fallback DOM manipulation for Zotero versions without MenuManager
+function addToAllWindows() {
+  var windows = Zotero.getMainWindows();
+  for (var win of windows) {
+    if (!win.ZoteroPane) continue;
+    addMenuItems(win);
+  }
+}
+
+function removeFromAllWindows() {
+  var windows = Zotero.getMainWindows();
+  for (var win of windows) {
+    if (!win.ZoteroPane) continue;
+    removeMenuItems(win);
+  }
+}
+
 function addMenuItems(window) {
   var doc = window.document;
+  var iconURI = pluginRootURI + "skin/default/sci-hub-logo.svg";
 
   // Add "Update Scihub PDF" to item context menu
   var itemMenuPopup = doc.getElementById("zotero-itemmenu");
@@ -177,10 +92,7 @@ function addMenuItems(window) {
     var itemMenu = doc.createXULElement("menuitem");
     itemMenu.id = "zotero-itemmenu-scihub";
     itemMenu.classList.add("menuitem-iconic");
-    itemMenu.setAttribute(
-      "image",
-      ZoteroScihub.rootURI + "skin/default/sci-hub-logo.svg"
-    );
+    itemMenu.setAttribute("image", iconURI);
     itemMenu.setAttribute("label", "Update Scihub PDF");
     itemMenu.addEventListener("command", function () {
       Zotero.Scihub.ItemPane.updateSelectedItems();
@@ -202,10 +114,7 @@ function addMenuItems(window) {
     var collMenu = doc.createXULElement("menuitem");
     collMenu.id = "zotero-collectionmenu-scihub";
     collMenu.classList.add("menuitem-iconic");
-    collMenu.setAttribute(
-      "image",
-      ZoteroScihub.rootURI + "skin/default/sci-hub-logo.svg"
-    );
+    collMenu.setAttribute("image", iconURI);
     collMenu.setAttribute("label", "Update Collection Scihub PDFs");
     collMenu.addEventListener("command", function () {
       Zotero.Scihub.ItemPane.updateSelectedEntity();
@@ -227,10 +136,7 @@ function addMenuItems(window) {
     var toolsMenu = doc.createXULElement("menuitem");
     toolsMenu.id = "zotero-scihub-tools-updateall";
     toolsMenu.classList.add("menuitem-iconic");
-    toolsMenu.setAttribute(
-      "image",
-      ZoteroScihub.rootURI + "skin/default/sci-hub-logo.svg"
-    );
+    toolsMenu.setAttribute("image", iconURI);
     toolsMenu.setAttribute("label", "Update All Scihub PDFs");
     toolsMenu.addEventListener("command", function () {
       Zotero.Scihub.ToolsPane.updateAll();
