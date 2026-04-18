@@ -95,7 +95,9 @@ function addMenuItems(window) {
     itemMenu.setAttribute("image", iconURI);
     itemMenu.setAttribute("label", "Update Scihub PDF");
     itemMenu.addEventListener("command", function () {
-      Zotero.Scihub.ItemPane.updateSelectedItems();
+      Zotero.Scihub.ItemPane.updateSelectedItems().catch(function (err) {
+        log("Error updating selected items: " + err);
+      });
     });
     itemMenuPopup.appendChild(itemMenu);
     addedElementIDs.push(itemMenu.id);
@@ -117,7 +119,9 @@ function addMenuItems(window) {
     collMenu.setAttribute("image", iconURI);
     collMenu.setAttribute("label", "Update Collection Scihub PDFs");
     collMenu.addEventListener("command", function () {
-      Zotero.Scihub.ItemPane.updateSelectedEntity();
+      Zotero.Scihub.ItemPane.updateSelectedEntity().catch(function (err) {
+        log("Error updating collection items: " + err);
+      });
     });
     collMenuPopup.appendChild(collMenu);
     addedElementIDs.push(collMenu.id);
@@ -139,7 +143,9 @@ function addMenuItems(window) {
     toolsMenu.setAttribute("image", iconURI);
     toolsMenu.setAttribute("label", "Update All Scihub PDFs");
     toolsMenu.addEventListener("command", function () {
-      Zotero.Scihub.ToolsPane.updateAll();
+      Zotero.Scihub.ToolsPane.updateAll().catch(function (err) {
+        log("Error updating all items: " + err);
+      });
     });
     toolsMenuPopup.appendChild(toolsMenu);
     addedElementIDs.push(toolsMenu.id);

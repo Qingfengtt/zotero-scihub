@@ -116,12 +116,12 @@ class Scihub {
     const userAgent = 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_3_1 like Mac OS X) '
       + 'AppleWebKit/603.1.30 (KHTML, like Gecko) Version/10.0 Mobile/14E304 Safari/602.1'
     const xhr = await Zotero.HTTP.request(
-      'GET', scihubUrl.href, { responseType: 'document', headers: { 'User-Agent': userAgent } }
+      'GET', scihubUrl.href, { responseType: 'document', headers: { 'User-Agent': userAgent }, timeout: 30000 }
     )
     // older .tf domains have iframe element, newer .st domain have embed element
     const rawPdfUrl = xhr.responseXML?.querySelector('#pdf')?.getAttribute('src')
     let pdfUrl = rawPdfUrl
-    if (rawPdfUrl !== undefined && (!rawPdfUrl?.startsWith('http') && !rawPdfUrl?.startsWith('//'))) {
+    if (rawPdfUrl != null && !rawPdfUrl.startsWith('http') && !rawPdfUrl.startsWith('//')) {
       pdfUrl = `${this.getBaseScihubUrl()}${rawPdfUrl}`
     }
     const body = xhr.responseXML?.querySelector('body')

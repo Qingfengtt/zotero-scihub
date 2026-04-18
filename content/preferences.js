@@ -3,41 +3,54 @@
 
 // Initialize preferences UI from stored values
 // Note: defaults here must match those in prefs.js to handle first-run initialization
+// The preference attribute on the HTML elements handles auto-binding in Zotero 7,
+// but this script provides a fallback for manual initialization.
 function initScihubPreferences() {
   var DEFAULT_SCIHUB_URL = "https://sci-hub.ru/";
   var DEFAULT_AUTOMATIC_PDF_DOWNLOAD = true;
 
-  var automaticPdfDownloadCheckbox = document.getElementById(
-    "id-zoteroscihub-automatic-pdf-download"
-  );
-  var currentAutoDownload = Zotero.Prefs.get(
-    "zoteroscihub.automatic_pdf_download"
-  );
-  if (currentAutoDownload === undefined) {
-    Zotero.Prefs.set(
-      "zoteroscihub.automatic_pdf_download",
-      DEFAULT_AUTOMATIC_PDF_DOWNLOAD
+  try {
+    var automaticPdfDownloadCheckbox = document.getElementById(
+      "id-zoteroscihub-automatic-pdf-download"
     );
-    currentAutoDownload = DEFAULT_AUTOMATIC_PDF_DOWNLOAD;
-  }
-  automaticPdfDownloadCheckbox.checked = currentAutoDownload;
-  automaticPdfDownloadCheckbox.addEventListener("change", function () {
-    Zotero.Prefs.set(
-      "zoteroscihub.automatic_pdf_download",
-      this.checked
+    var currentAutoDownload = Zotero.Prefs.get(
+      "zoteroscihub.automatic_pdf_download"
     );
-  });
+    if (currentAutoDownload === undefined) {
+      Zotero.Prefs.set(
+        "zoteroscihub.automatic_pdf_download",
+        DEFAULT_AUTOMATIC_PDF_DOWNLOAD
+      );
+      currentAutoDownload = DEFAULT_AUTOMATIC_PDF_DOWNLOAD;
+    }
+    if (automaticPdfDownloadCheckbox) {
+      automaticPdfDownloadCheckbox.checked = currentAutoDownload;
+      automaticPdfDownloadCheckbox.addEventListener("change", function () {
+        Zotero.Prefs.set(
+          "zoteroscihub.automatic_pdf_download",
+          this.checked
+        );
+      });
+    }
 
-  var sciHubUrlInput = document.getElementById("id-zoteroscihub-scihub-url");
-  var currentUrl = Zotero.Prefs.get("zoteroscihub.scihub_url");
-  if (currentUrl === undefined) {
-    Zotero.Prefs.set("zoteroscihub.scihub_url", DEFAULT_SCIHUB_URL);
-    currentUrl = DEFAULT_SCIHUB_URL;
+    var sciHubUrlInput = document.getElementById("id-zoteroscihub-scihub-url");
+    var currentUrl = Zotero.Prefs.get("zoteroscihub.scihub_url");
+    if (currentUrl === undefined) {
+      Zotero.Prefs.set("zoteroscihub.scihub_url", DEFAULT_SCIHUB_URL);
+      currentUrl = DEFAULT_SCIHUB_URL;
+    }
+    if (sciHubUrlInput) {
+      sciHubUrlInput.value = currentUrl;
+      sciHubUrlInput.addEventListener("change", function () {
+        Zotero.Prefs.set("zoteroscihub.scihub_url", this.value);
+      });
+      sciHubUrlInput.addEventListener("input", function () {
+        Zotero.Prefs.set("zoteroscihub.scihub_url", this.value);
+      });
+    }
+  } catch (e) {
+    Zotero.debug("Sci-Hub Plugin: Error initializing preferences: " + e);
   }
-  sciHubUrlInput.value = currentUrl;
-  sciHubUrlInput.addEventListener("change", function () {
-    Zotero.Prefs.set("zoteroscihub.scihub_url", this.value);
-  });
 }
 
 initScihubPreferences();
