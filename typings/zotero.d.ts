@@ -19,7 +19,7 @@ interface ZoteroItem {
   libraryID: string
   getField: (field: string, unformatted?: boolean, includeBaseMapped?: boolean) => string
   isRegularItem: () => boolean
-  isCollection: () => boolean
+  isCollection?: () => boolean
 }
 
 interface ProgressWindow {
