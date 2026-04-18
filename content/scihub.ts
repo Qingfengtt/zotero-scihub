@@ -18,6 +18,14 @@ class PdfNotFoundError extends Error {
   }
 }
 
+class CaptchaRequiredError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'CaptchaRequiredError'
+    Object.setPrototypeOf(this, CaptchaRequiredError.prototype)
+  }
+}
+
 class ItemObserver implements ZoteroObserver {
   // Called when a new item is added to the library
   public async notify(event: string, _type: string, ids: [number], _extraData: Record<string, any>) {
@@ -92,19 +100,28 @@ class Scihub {
       try {
         await this.updateItem(scihubUrl, item)
       } catch (error) {
-        if (error instanceof PdfNotFoundError) {
+        if (error instanceof CaptchaRequiredError) {
+          // Skip this item and continue with remaining items
+          ZoteroUtil.showPopup(
+            'Captcha Required',
+            `Captcha is required for "${item.getField('title')}". Skipping this item.`,
+            true
+          )
+          Zotero.debug(`scihub: captcha required, skipping "${item.getField('title')}"`)
+          continue
+        } else if (error instanceof PdfNotFoundError) {
           // Do not stop traversing items if PDF is missing for one of them
           ZoteroUtil.showPopup('PDF not available', `Try again later.\n"${item.getField('title')}"`, true)
           continue
         } else {
-          // Break if Captcha is reached, notify user and redirect
+          // Skip this item on unexpected errors and continue with remaining items
           ZoteroUtil.showPopup(
-            'Captcha Required',
-            `Captcha is required or PDF is not ready yet for "${item.getField('title')}".\nYou will be redirected to the Sci-Hub page.\nRestart fetching process manually.\nError: ${error}`,
+            'Download Failed',
+            `Failed to download PDF for "${item.getField('title')}". Skipping this item.\nError: ${error}`,
             true
           )
-          Zotero.launchURL(scihubUrl.href)
-          break
+          Zotero.debug(`scihub: unexpected error for "${item.getField('title')}": ${error}`)
+          continue
         }
       }
     }
@@ -133,6 +150,9 @@ class Scihub {
     } else if (xhr.status === HttpCodes.DONE && this.isPdfNotAvailable(body)) {
       Zotero.debug(`scihub: PDF is not available at the moment "${scihubUrl}"`)
       throw new PdfNotFoundError(`Pdf is not available: ${scihubUrl}`)
+    } else if (xhr.status === HttpCodes.DONE && this.isCaptchaRequired(body)) {
+      Zotero.debug(`scihub: captcha required for "${scihubUrl}"`)
+      throw new CaptchaRequiredError(`Captcha is required: ${scihubUrl}`)
     } else {
       Zotero.debug(`scihub: failed to fetch PDF from "${scihubUrl}"`)
       throw new Error(xhr.statusText)
@@ -146,6 +166,16 @@ class Scihub {
     if (!innerHTML || innerHTML?.trim() === '' ||
       innerHTML?.match(/Please try to search again using DOI/im) ||
       innerHTML?.match(/статья не найдена в базе/im)) {
+      return true
+    }
+    return false
+  }
+
+  private isCaptchaRequired(body: HTMLBodyElement | null | undefined): boolean {
+    const innerHTML = body?.innerHTML
+    if (innerHTML?.match(/captcha/im) ||
+      innerHTML?.match(/challenge/im) ||
+      innerHTML?.match(/id="captcha"/im)) {
       return true
     }
     return false
