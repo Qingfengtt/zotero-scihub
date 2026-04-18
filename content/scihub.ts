@@ -79,7 +79,7 @@ class Scihub {
     // then user have to be redirected to the page to fill it in
     for (const item of items) {
       // Skip items which are not processable
-      if (!item.isRegularItem() || (typeof item.isCollection === 'function' && item.isCollection())) { continue }
+      if (!item.isRegularItem() || item.isCollection?.()) { continue }
 
       // Skip items without DOI or if URL generation had failed
       const scihubUrl = this.generateScihubItemUrl(item)
