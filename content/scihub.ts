@@ -32,7 +32,7 @@ class ItemObserver implements ZoteroObserver {
 
 class Scihub {
   // TOOD: only bulk-update items which are missing paper attachement
-  private static readonly DEFAULT_SCIHUB_URL = 'https://sci-hub.ru/'
+  private static readonly DEFAULT_SCIHUB_URL = 'https://sci-hub.al/'
   private static readonly DEFAULT_AUTOMATIC_PDF_DOWNLOAD = true
   private observerId: number | null = null
   private initialized = false
@@ -79,7 +79,7 @@ class Scihub {
     // then user have to be redirected to the page to fill it in
     for (const item of items) {
       // Skip items which are not processable
-      if (!item.isRegularItem() || item.isCollection()) { continue }
+      if (!item.isRegularItem() || (typeof item.isCollection === 'function' && item.isCollection())) { continue }
 
       // Skip items without DOI or if URL generation had failed
       const scihubUrl = this.generateScihubItemUrl(item)
