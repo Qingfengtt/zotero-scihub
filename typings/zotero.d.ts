@@ -57,6 +57,7 @@ interface IZotero {
       body?: string,
       responseType?: XMLHttpRequestResponseType,
       headers?: Record<string, string>,
+      timeout?: number,
     }) => Promise<XMLHttpRequest>
   }
 
