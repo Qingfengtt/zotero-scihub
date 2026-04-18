@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 
 import { expect } from 'chai'
-import { spy, stub, FakeXMLHttpRequest, fakeServer } from 'sinon'
+import { spy, FakeXMLHttpRequest, fakeServer } from 'sinon'
 // DOMParser is requited to support sinon fake xhr document parser
 import { JSDOM } from 'jsdom'
 globalThis.DOMParser = new JSDOM().window.DOMParser
@@ -107,18 +107,13 @@ describe('Scihub test', () => {
       expect(attachmentSpy.calledOnce).to.be.true
     })
 
-    it('captcha redirects user and stops execution', async () => {
-      const launchURLSpy = spy(Zotero, 'launchURL')
-      const alertStub = stub(globalThis, 'alert')
-
-      // captachItem has weird response
+    it('captcha shows popup and continues execution', async () => {
+      // captchaItem triggers captcha response, but should skip and continue
       await Zotero.Scihub.updateItems([captchaItem, regularItem1])
 
-      expect(launchURLSpy.calledOnce).to.be.true
-      expect(attachmentSpy.notCalled).to.be.true
-
-      launchURLSpy.restore()
-      alertStub.restore()
+      expect(progressWindowSpy.calledWith('Error')).to.be.true
+      expect(attachmentSpy.calledOnce).to.be.true
+      expect(attachmentSpy.firstCall.args[0].title).to.equal('regularItemTitle1')
     })
   })
 })
