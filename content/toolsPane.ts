@@ -8,11 +8,12 @@ class ToolsPane {
     try {
       Zotero.debug('scihub: updating all items')
 
-      const allItems = await Zotero.Items.getAll()
+      const ZoteroPane = Zotero.getActiveZoteroPane()
+      const libraryId = ZoteroPane.getSelectedLibraryID()
+      const allItems = await Zotero.Items.getAll(libraryId)
       const items = allItems.filter(item => {
-        const libraryId = item.getField('libraryID')
         const isProcessable = item.isRegularItem() && !item.isCollection()
-        const isEditable: boolean = libraryId === null || libraryId === '' || Zotero.Libraries.isEditable(libraryId)
+        const isEditable: boolean = Zotero.Libraries.isEditable(item.libraryID)
 
         return isProcessable && isEditable
       }) as [ZoteroItem]
