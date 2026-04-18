@@ -41,9 +41,6 @@ function initScihubPreferences() {
     }
     if (sciHubUrlInput) {
       sciHubUrlInput.value = currentUrl;
-      sciHubUrlInput.addEventListener("change", function () {
-        Zotero.Prefs.set("zoteroscihub.scihub_url", this.value);
-      });
       sciHubUrlInput.addEventListener("input", function () {
         Zotero.Prefs.set("zoteroscihub.scihub_url", this.value);
       });

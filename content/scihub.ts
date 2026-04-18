@@ -121,6 +121,7 @@ class Scihub {
     // older .tf domains have iframe element, newer .st domain have embed element
     const rawPdfUrl = xhr.responseXML?.querySelector('#pdf')?.getAttribute('src')
     let pdfUrl = rawPdfUrl
+    // Prepend base URL if the PDF URL is a relative path (not absolute http/https or protocol-relative)
     if (rawPdfUrl != null && !rawPdfUrl.startsWith('http') && !rawPdfUrl.startsWith('//')) {
       pdfUrl = `${this.getBaseScihubUrl()}${rawPdfUrl}`
     }
