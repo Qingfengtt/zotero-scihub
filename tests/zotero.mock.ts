@@ -16,6 +16,7 @@ const Zotero: IZotero = new class {
       displayCannotEditLibraryMessage: () => undefined,
       getSelectedCollection: () => null,
       getSelectedItems: () => [regularItem1] as [ZoteroItem],
+      getSelectedLibraryID: () => 1,
     }
   }
   public getMainWindows() { return [] }
@@ -49,7 +50,7 @@ const Zotero: IZotero = new class {
       }
     }
 
-    public async getAll(): Promise<ZoteroItem[]> {
+    public async getAll(_libraryID: number): Promise<ZoteroItem[]> {
       return Promise.resolve([regularItem1, regularItem2])
     }
   }

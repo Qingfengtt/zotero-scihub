@@ -3,6 +3,7 @@ interface IZoteroPane {
   displayCannotEditLibraryMessage: () => void
   getSelectedCollection: (asID: boolean) => ZoteroCollection | null
   getSelectedItems: () => [ZoteroItem]
+  getSelectedLibraryID: () => number
 }
 
 interface ZoteroCollection {
@@ -49,7 +50,7 @@ interface IZotero {
 
   Items: {
     getAsync: (ids: number | number[]) => Promise<any | any[]>
-    getAll: () => Promise<ZoteroItem[]>
+    getAll: (libraryID: number) => Promise<ZoteroItem[]>
   }
 
   HTTP: {
