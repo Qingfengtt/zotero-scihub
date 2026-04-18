@@ -113,6 +113,7 @@ describe('Scihub test', () => {
 
       expect(progressWindowSpy.calledWith('Error')).to.be.true
       expect(attachmentSpy.calledOnce).to.be.true
+      expect(attachmentSpy.firstCall.args[0].title).to.equal('regularItemTitle1')
     })
   })
 })

@@ -173,9 +173,7 @@ class Scihub {
 
   private isCaptchaRequired(body: HTMLBodyElement | null | undefined): boolean {
     const innerHTML = body?.innerHTML
-    if (innerHTML?.match(/captcha/im) ||
-      innerHTML?.match(/challenge/im) ||
-      innerHTML?.match(/id="captcha"/im)) {
+    if (innerHTML?.match(/captcha|challenge/im)) {
       return true
     }
     return false
